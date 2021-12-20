@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -9,6 +9,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [newAccount, setNewAccount] = useState(true);
+  const [error, setError] = useState("");
 
   const onChange = (event) => {
     console.log(event.target.name);
@@ -22,21 +23,25 @@ const Auth = () => {
     }
   };
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
-    const auth = getAuth();
-    let data;
+
     try {
+      const auth = getAuth();
+      let data;
       if (newAccount) {
-        data = createUserWithEmailAndPassword(auth, email, password);
+        data = await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        data = signInWithEmailAndPassword(auth, email, password);
+        data = await signInWithEmailAndPassword(auth, email, password);
       }
-    } catch (err) {
-      console.log(err);
+      // console.log(data);
+    } catch (error) {
+      console.log(error.message);
+      setError(error.message);
     }
-    console.log(data);
   };
+
+  const toggleAccount = () => setNewAccount((prev) => !prev);
 
   return (
     <div>
@@ -58,7 +63,11 @@ const Auth = () => {
           onChange={onChange}
         />
         <input type="submit" value={newAccount ? "Create Account" : "Log In"} />
+        {error}
       </form>
+      <span onClick={toggleAccount}>
+        {newAccount ? "Sign in" : "Create Account"}
+      </span>
       <div>
         <button>Continue with Github </button>
       </div>
