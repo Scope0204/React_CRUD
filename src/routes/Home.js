@@ -1,33 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { dbService } from "../fbase";
-import { addDoc, collection, getDocs, query } from "firebase/firestore";
+import { addDoc, collection, onSnapshot, query } from "firebase/firestore";
+import Nweet from "../components/Nweet";
 
-const Home = () => {
+const Home = ({ userObj }) => {
+  //   console.log(userObj);
   const [nweet, setNweet] = useState("");
   const [nweets, setNweets] = useState([]);
 
-  const getNweets = async () => {
-    const q = query(collection(dbService, "nweets")); // collection "nweets"
-    const querySnapShot = await getDocs(q); // "nweets"의 컬렉션의 Document를 가져옴
-    querySnapShot.forEach((doc) => {
-      const nweetObj = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      setNweets((prev) => [nweetObj, ...prev]); // 새 Nweet + 기존 Nweet
-    });
-  };
-
   useEffect(() => {
-    getNweets();
+    const q = query(collection(dbService, "nweets"));
+    onSnapshot(q, (snapshot) => {
+      const nweetArr = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setNweets(nweetArr);
+    });
   }, []);
 
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
       const docRef = await addDoc(collection(dbService, "nweets"), {
-        nweet,
-        createAt: Date.now(),
+        text: nweet,
+        createdAt: Date.now(),
+        createorId: userObj.uid,
       });
       console.log("document written with ID :", docRef.id);
     } catch (err) {
@@ -57,9 +55,7 @@ const Home = () => {
       </form>
       <div>
         {nweets.map((nweet) => (
-          <div key={nweet.id}>
-            <h4>{nweet.nweet}</h4>
-          </div>
+          <Nweet key={nweet.id} nweetObj={nweet} />
         ))}
       </div>
     </div>
