@@ -15,7 +15,6 @@ function App() {
       if (user) {
         setIsLoggedIn(true);
         setUserObj(user); // 현재 유저정보를 저장
-        // const uid = user.uid;
       } else {
         setIsLoggedIn(false);
       }

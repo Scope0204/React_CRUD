@@ -55,7 +55,11 @@ const Home = ({ userObj }) => {
       </form>
       <div>
         {nweets.map((nweet) => (
-          <Nweet key={nweet.id} nweetObj={nweet} />
+          <Nweet
+            key={nweet.id}
+            nweetObj={nweet}
+            isOwner={nweet.createorId === userObj.uid}
+          />
         ))}
       </div>
     </div>
