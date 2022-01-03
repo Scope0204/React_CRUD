@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { dbService, storageService } from "../fbase";
 import { addDoc, collection, onSnapshot, query } from "firebase/firestore";
 import Nweet from "../components/Nweet";
-import { ref, uploadString } from "firebase/storage";
+import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
 
 const Home = ({ userObj }) => {
@@ -24,24 +24,31 @@ const Home = ({ userObj }) => {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-
-    const fileRef = ref(storageService, `${userObj.uid}/${uuidv4()}`);
-    const response = await uploadString(fileRef, attachment, "data_url");
-    console.log(response);
-
-    /*
-    try {
-      const docRef = await addDoc(collection(dbService, "nweets"), {
-        text: nweet,
-        createdAt: Date.now(),
-        createorId: userObj.uid,
-      });
-      console.log("document written with ID :", docRef.id);
-    } catch (err) {
-      console.log(err);
+    let attachmentUrl = "";
+    if (attachment !== "") {
+      //파일 경로 참조 만들기
+      const attachmentRef = ref(storageService, `${userObj.uid}/${uuidv4()}`);
+      //storage 참조 경로로 파일 만들기
+      const response = await uploadString(
+        attachmentRef,
+        attachment,
+        "data_url"
+      );
+      console.log(response.ref);
+      //storage에 있는 파일 URL로 다운받기
+      attachmentUrl = await getDownloadURL(response.ref);
+      console.log(attachmentUrl);
     }
+    const docRef = {
+      text: nweet,
+      createdAt: Date.now(),
+      createorId: userObj.uid,
+      attachmentUrl,
+    };
+    await addDoc(collection(dbService, "nweets"), docRef);
+
     setNweet(""); //등록 시 입력폼에 값 초기화
-    */
+    setAttachment(""); // 사진을 만들고 업로드 할 땐 아무것도 안함
   };
 
   const onChange = (event) => {
@@ -86,7 +93,7 @@ const Home = ({ userObj }) => {
         <input type="submit" value="NWeet" />
         {attachment && (
           <div>
-            <img src={attachment} width="50px" height="50px" />
+            <img src={attachment} width="50px" height="50px" alt="첨부사진" />
             <button onClick={onClearAttachment}>Clear</button>
           </div>
         )}

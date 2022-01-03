@@ -2,6 +2,8 @@ import React from "react";
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react/cjs/react.development";
 import { dbService } from "../fbase";
+import { deleteObject, ref } from "firebase/storage";
+import { storageService } from "../fbase";
 
 const Nweet = ({ nweetObj, isOwner }) => {
   const [editing, setEditing] = useState(false); // edit모드인지 아닌지
@@ -15,6 +17,8 @@ const Nweet = ({ nweetObj, isOwner }) => {
     if (ok) {
       //delete
       await deleteDoc(NweetTextRef);
+      const urlRef = ref(storageService, nweetObj.attachmentUrl);
+      await deleteObject(urlRef);
     }
   };
   const toggleEditing = () => setEditing((prev) => !prev);
@@ -53,6 +57,14 @@ const Nweet = ({ nweetObj, isOwner }) => {
       ) : (
         <>
           <h4>{nweetObj.text}</h4>
+          {nweetObj.attachmentUrl && (
+            <img
+              src={nweetObj.attachmentUrl}
+              width="50px"
+              height="50px"
+              alt="첨부사진"
+            />
+          )}
           {isOwner && (
             <>
               <button onClick={onDeleteClick}>Delete Nweet</button>
