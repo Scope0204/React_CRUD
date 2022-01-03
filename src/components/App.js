@@ -10,6 +10,10 @@ function App() {
     const auth = getAuth();
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        if (user.displayName == null) {
+          const name = user.email.split("@")[0];
+          user.displayName = name; // 깃 로그인 시 displayName이 null로 되어있음
+        }
         setUserObj(user); // 현재 유저정보를 저장
       }
       setInit(true);

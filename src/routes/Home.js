@@ -42,7 +42,7 @@ const Home = ({ userObj }) => {
     const docRef = {
       text: nweet,
       createdAt: Date.now(),
-      createorId: userObj.uid,
+      creatorId: userObj.uid,
       attachmentUrl,
     };
     await addDoc(collection(dbService, "nweets"), docRef);
